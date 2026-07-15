@@ -148,7 +148,20 @@ Server menyala di `http://localhost:3000`. Langsung buka browser dan tes API And
 
 ---
 
-## 💡 Aturan Main (Golden Rules) Internship
-1. **Controller bukan tempat mikir!** Controller hanya menerima request dan memanggil `Service`. Semua *Business Logic* hidup di dalam `Service`.
-2. **Gunakan DTO!** Jangan menangkap *request body* dengan `@Body() body: any`. Itu dosa besar di TypeScript.
-3. **Jangan membuat response/error manual!** Cukup *return* data bersih atau lemparkan *error* (`throw new BadRequestException('Pesan')`).
+## 🔄 Alur Permintaan (Lifecycle of a Request)
+
+Pahami bagaimana sebuah *request* berjalan dari awal hingga akhir di dalam sistem NestJS kita:
+**`Client`** ➡️ **`Global ValidationPipe`** *(Cek DTO)* ➡️ **`Controller`** *(Terima Request)* ➡️ **`Service`** *(Proses Logika)* ➡️ **`Prisma`** *(Akses DB)* ➡️ **`Service`** ➡️ **`Global Interceptor`** *(Bungkus JSON)* ➡️ **`Client`**
+
+> Semua error yang Anda lempar (*throw*) di tengah jalan akan dicegat otomatis oleh `Global Exception Filter` sebelum sampai ke `Client`.
+
+---
+
+## 💡 Aturan Emas (The Golden Rules)
+
+Agar kode Anda tidak ditolak saat *Code Review*, Anda **WAJIB** mematuhi 4 aturan mutlak ini:
+
+1. **Service is the King:** Segala bentuk *business logic* (aturan bisnis, perhitungan, validasi status) WAJIB berada di `Service` (kelas yang dihiasi `@Injectable()`). Jangan pernah menaruh logika bisnis di `Controller`!
+2. **Controller is Just a Butler:** Tugas `Controller` HANYA tiga: Menerima *request*, memanggil `Service`, dan mengembalikan *response*.
+3. **Strict Isolation (Isolasi Ketat Antar Modul):** Modul `Product` **DILARANG KERAS** melakukan query ke tabel user secara langsung (`this.prisma.user`). Jika `Product` butuh data dari tabel User, maka `ProductModule` harus meng-import `UserModule`, dan memanggil metode milik `UserService`.
+4. **Validasi Mutlak Lewat DTO:** Validasi *request body* murni dilakukan menggunakan *class-validator* di dalam file DTO (*Data Transfer Object*). Jangan pernah melakukan `if(!req.body.name)` secara manual!
