@@ -14,6 +14,22 @@ Tujuan utama dari *boilerplate* ini adalah memberikan contoh struktur kode kelas
 
 Seluruh kode Anda akan hidup di dalam folder `src/`. Kami membagi kode menjadi dua bagian utama: **`core/`** dan **`modules/`**.
 
+**Visualisasi Struktur Folder:**
+```text
+src/
+├── core/                   # Inti penyokong aplikasi (Global)
+│   ├── dto/                # Global DTOs (contoh: pagination)
+│   ├── filters/            # Global Exception Filters (Error format)
+│   ├── guards/             # Penjaga rute keamanan (JWT Guard)
+│   ├── interceptors/       # Global Interceptors (Success format)
+│   └── prisma/             # Konfigurasi Database Prisma
+│
+└── modules/                # Tempat seluruh fitur aplikasi hidup (Area Kerja)
+    ├── auth/               # Modul Login & Register
+    ├── product/            # Modul CRUD Referensi Utama
+    └── user/               # Modul Pengguna
+```
+
 ### 1. `src/core/` (Infrastruktur & Pondasi)
 Folder ini mengurus urusan di belakang layar (sistem keamanan, penangkap error, validasi). **Secara umum, JANGAN UBAH isi folder ini** kecuali Anda mengerti apa yang Anda lakukan.
 - **`dto/pagination.dto.ts`**: Kelas standar parameter (*page* dan *limit*). Selalu gunakan ini jika fitur Anda membutuhkan *List* data berjumlah banyak.
