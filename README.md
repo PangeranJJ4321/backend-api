@@ -198,3 +198,7 @@ Jika sewaktu-waktu Anda ditugaskan untuk mengimplementasikan fitur-fitur berskal
    - **Setup Infrastruktur:** Konfigurasi antrean berada di `src/core/queue/`.
    - **Producer (Pembuat Antrean):** Diletakkan di dalam `Service` biasa.
    - **Consumer/Processor (Pekerja Background):** Buat file berakhiran `.processor.ts` di dalam modul terkait. (Contoh: Pekerja yang mengirimkan email diletakkan di `src/modules/notification/notification.processor.ts`).
+4. **Aturan Multi-Service dalam Satu Modul**
+   - **Skala Kecil (2-3 Service):** Jika Anda membuat fitur ekstra kecil (misal `product-discount.service.ts`), biarkan sejajar dengan `product.service.ts` di dalam folder modul `product/`.
+   - **Skala Besar (>3 Service):** Jika servis mulai menumpuk, buat sub-folder `services/` dan `controllers/` di dalam modul tersebut.
+   - **⚠️ Lampu Kuning:** Jika sebuah modul dirasa memiliki terlalu banyak *Service*, itu pertanda arsitekturnya salah. Pisahkan fitur tersebut menjadi Modul baru yang mandiri! (Contoh: Pisahkan fitur *Review* dari Modul `Product` menjadi `ReviewModule` tersendiri).
