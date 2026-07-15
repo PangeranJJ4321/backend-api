@@ -181,3 +181,20 @@ Agar kode Anda tidak ditolak saat *Code Review*, Anda **WAJIB** mematuhi 4 atura
 2. **Controller is Just a Butler:** Tugas `Controller` HANYA tiga: Menerima *request*, memanggil `Service`, dan mengembalikan *response*.
 3. **Strict Isolation (Isolasi Ketat Antar Modul):** Modul `Product` **DILARANG KERAS** melakukan query ke tabel user secara langsung (`this.prisma.user`). Jika `Product` butuh data dari tabel User, maka `ProductModule` harus meng-import `UserModule`, dan memanggil metode milik `UserService`.
 4. **Validasi Mutlak Lewat DTO:** Validasi *request body* murni dilakukan menggunakan *class-validator* di dalam file DTO (*Data Transfer Object*). Jangan pernah melakukan `if(!req.body.name)` secara manual!
+
+---
+
+## 🏗️ Advanced Architecture (Panduan Skala Besar)
+
+Jika sewaktu-waktu Anda ditugaskan untuk mengimplementasikan fitur-fitur berskala besar (*advanced*), ikuti acuan peletakan file ini agar pola *Modular Monolith* kita tetap bersih dan terisolasi:
+
+1. **Redis (Caching)**
+   - **Setup/Koneksi:** Konfigurasi dasar diletakkan di `src/core/redis/` atau `app.module.ts`.
+   - **Eksekusi:** Digunakan (di-*inject*) langsung di dalam `Service`. (Contoh: *Cache* daftar harga dipanggil di dalam `product.service.ts`).
+2. **Cron Jobs (Task Scheduling / Penjadwalan Otomatis)**
+   - **Lokasi File:** Buat file khusus dengan akhiran `.cron.ts` atau `.task.ts` **di dalam folder modul** yang bersangkutan.
+   - **Contoh:** Tugas otomatis untuk mereset stok produk diletakkan di `src/modules/product/product.cron.ts`. *DILARANG* membuat folder `cron` global yang mencampuradukkan semua tugas domain bisnis!
+3. **Background Workers (Queues / BullMQ / RabbitMQ)**
+   - **Setup Infrastruktur:** Konfigurasi antrean berada di `src/core/queue/`.
+   - **Producer (Pembuat Antrean):** Diletakkan di dalam `Service` biasa.
+   - **Consumer/Processor (Pekerja Background):** Buat file berakhiran `.processor.ts` di dalam modul terkait. (Contoh: Pekerja yang mengirimkan email diletakkan di `src/modules/notification/notification.processor.ts`).
