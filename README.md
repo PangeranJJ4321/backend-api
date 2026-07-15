@@ -2,97 +2,153 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# 🚀 Intern Backend Boilerplate (NestJS)
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Selamat datang di *Template Backend* resmi untuk program Internship. Boilerplate ini dibangun menggunakan **NestJS**, **Prisma ORM**, dan database **TiDB Serverless (MySQL)** dengan berlandaskan arsitektur **Modular Monolith**.
 
-## Description
+Tujuan utama dari *boilerplate* ini adalah memberikan contoh struktur kode kelas *Production* yang kokoh, sehingga Anda memiliki referensi (contekan) mutlak tentang bagaimana menulis kode yang benar, aman, dan mudah dipelihara.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 📂 Panduan Navigasi Direktori (PENTING!)
 
-```bash
-$ npm install
+Seluruh kode Anda akan hidup di dalam folder `src/`. Kami membagi kode menjadi dua bagian utama: **`core/`** dan **`modules/`**.
+
+### 1. `src/core/` (Infrastruktur & Pondasi)
+Folder ini mengurus urusan di belakang layar (sistem keamanan, penangkap error, validasi). **Secara umum, JANGAN UBAH isi folder ini** kecuali Anda mengerti apa yang Anda lakukan.
+- **`dto/pagination.dto.ts`**: Kelas standar parameter (*page* dan *limit*). Selalu gunakan ini jika fitur Anda membutuhkan *List* data berjumlah banyak.
+- **`filters/`**: Menangkap semua jenis error (*crash*) dan merapikannya menjadi JSON agar tidak merusak frontend (Termasuk menangkap error duplikasi `P2002` dari Prisma).
+- **`guards/`**: Berisi `JwtAuthGuard` yang bertugas sebagai *satpam* penjaga rute API dari user yang belum login.
+
+---
+
+### 2. `src/modules/` (Area Kerja Anda!)
+Di sinilah Anda akan *ngoding* setiap hari. Setiap fitur/tabel dalam database **HARUS** dipisah menjadi satu folder di sini (misal: `user/`, `order/`, `payment/`). 
+
+Berikut penjelasan untuk modul bawaan *template* ini:
+
+#### 📌 Modul `auth/` (Sistem Login & Register)
+Menangani pembuatan **Token JWT** dan pencocokan **Password bcrypt**.
+- **Apakah perlu diubah?** Secara standar, **TIDAK PERLU**. Proses login (menghasilkan *access_token*) dan register (insert ke database) sudah siap pakai.
+- **Kapan harus diedit?** Jika pembimbing/klien meminta fitur tambahan seperti *Forgot Password*, *Reset Password*, atau *Login with Google/SSO*. Anda bisa menambahkannya di `auth.controller.ts` dan melampirkan logikanya di `auth.service.ts`.
+
+#### 📌 Modul `product/` (CONTOH "CRUD" REFERENSI UTAMA)
+Folder ini **sengaja kami lengkapi secara sempurna** agar bisa Anda jadikan *benchmark* atau acuan saat Anda ditugaskan membuat modul/tabel baru! 
+
+- **Bagaimana cara memvalidasi Request (DTO)?** 
+  Coba buka `src/modules/product/dto/create-product.dto.ts`. Perhatikan bagaimana kita mendefinisikan *class* dengan `@IsString()` dan `@Min(0)`. Jika *Frontend* berulah dan mengirim harga minus, permintaan tersebut otomatis tertolak! Selalu gunakan pola ini!
+  
+- **Di mana logika Database ditulis? (Contoh GetAll Paginasi)**
+  Buka `product.service.ts`. **Controller dilarang menyentuh database**, maka fungsi pencarian data ditulis di Service.
+  Contoh cara membuat fitur "*Get All*" menggunakan Prisma lengkap dengan Paginasi:
+  ```typescript
+  async findAll(paginationDto: PaginationDto) {
+    const { page = 1, limit = 10 } = paginationDto;
+    const skip = (page - 1) * limit; // Hitung offset
+
+    // Panggil tabel dari database secara paralel
+    const [data, total] = await Promise.all([
+      this.prisma.product.findMany({ skip, take: limit }), // Ambil data
+      this.prisma.product.count(),                         // Ambil total
+    ]);
+    
+    // Response dengan struktur meta yang elegan
+    return { data, meta: { total, page, lastPage: Math.ceil(total / limit) } };
+  }
+  ```
+
+- **Bagaimana membatasi hak akses Endpoint?**
+  Lihat `product.controller.ts`. Jika Anda ingin Endpoint (misal `POST`) **HANYA BISA DIAKSES** oleh orang yang sudah Login, bubuhkan `@UseGuards(JwtAuthGuard)` tepat di atas fungsi *Controller*-nya. Endpoint tersebut akan aman seketika.
+
+#### 📌 Modul `user/` (Contoh Data Profil)
+Buka `user.controller.ts`, di sana ada fungsi `getProfile()`. Karena endpoint ini dijaga oleh `@UseGuards(JwtAuthGuard)`, Anda bisa dengan mudah mengambil data sesi login pengguna dengan param `@Request() req`, lalu me-return `req.user`. Sesederhana itu!
+
+---
+
+## 🛠️ Panduan Standar Respons & Error Handling
+
+Template ini sudah memiliki sistem otomatis untuk membungkus balasan API (*Interceptor*) dan menangkap *error* (*Exception Filter*). Anda **DILARANG KERAS** menggunakan manipulasi response manual seperti `res.status(200).send()`.
+
+### 1. Membalas Request Berhasil (Success Response)
+Semua fungsi di *Controller* yang me-return sesuatu akan otomatis dibungkus menjadi JSON standar: `{ status, message, data }`.
+
+**Contoh A: Pesan Default "Success"**
+```typescript
+// Di Service / Controller cukup return data mentah:
+return [{ id: 1, name: 'Baju' }];
+
+// 🪄 Output JSON ke Frontend Otomatis:
+// { "status": "success", "message": "Success", "data": [{ "id": 1, "name": "Baju" }] }
 ```
 
-## Compile and run the project
+**Contoh B: Pesan Custom**
+```typescript
+// Jika ingin pesan spesifik, return object { message, data }:
+return { message: 'Produk berhasil dicheckout!', data: newOrder };
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+// 🪄 Output JSON ke Frontend Otomatis:
+// { "status": "success", "message": "Produk berhasil dicheckout!", "data": { ... } }
 ```
 
-## Run tests
+### 2. Melempar Error (Error Handling / Throwing)
+Jika validasi logika bisnis gagal (contoh: barang habis, atau data tidak ada), Anda cukup menggunakan keyword `throw` milik NestJS di dalam file *Service*.
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```typescript
+// Contoh implementasi di dalam product.service.ts
+async findOne(id: number) {
+  const product = await this.prisma.product.findUnique({ where: { id } });
+  
+  if (!product) {
+    // ❌ SALAH BESAR: return { status: 'error', message: 'Tidak ketemu' }
+    
+    // ✅ BENAR: Lempar error bawaan NestJS!
+    throw new NotFoundException(`Produk dengan ID ${id} tidak ditemukan`);
+  }
+  
+  return product;
+}
 ```
+*Daftar Exception NestJS yang paling sering digunakan intern:*
+- `BadRequestException('Pesan')` ➡️ Validasi gagal / input salah (HTTP 400)
+- `UnauthorizedException('Pesan')` ➡️ Gagal login / Token JWT expired (HTTP 401)
+- `ForbiddenException('Pesan')` ➡️ Akses ditolak / Fitur khusus Admin (HTTP 403)
+- `NotFoundException('Pesan')` ➡️ Data tidak ada di database (HTTP 404)
+- `ConflictException('Pesan')` ➡️ Data bentrok / Saldo minus (HTTP 409)
 
-## Deployment
+> **✨ MAGIC PRISMA**: Khusus error teknis database Prisma (seperti gagal insert karena `email` sudah ada di tabel User), Anda tidak perlu *throw* secara manual! Biarkan Prisma memprosesnya, *Global Filter* kita akan menyulap kode error `P2002` Prisma tersebut menjadi JSON berstatus `409 Conflict` secara gaib.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🚀 Cara Menjalankan Project (Getting Started)
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+1. **Instal Dependencies**: `npm install`
+2. **Setup File `.env` & Database**: Salin konfigurasi ini ke file `.env` (sejajar dengan package.json)
+   ```env
+   # Contoh 1: Menggunakan TiDB Serverless (MySQL)
+   DATABASE_URL="mysql://<user>:<password>@<host>:4000/<dbname>?sslaccept=strict"
+   
+   # Contoh 2: Menggunakan MySQL Local (XAMPP/Laragon)
+   # DATABASE_URL="mysql://root:@localhost:3306/db_intern"
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+   # Contoh 3: Menggunakan PostgreSQL Local
+   # DATABASE_URL="postgresql://postgres:password@localhost:5432/db_intern?schema=public"
+   
+   JWT_SECRET="secret-key-super-aman-anda"
+   ```
+   > ⚠️ **PENTING JIKA PAKAI POSTGRESQL**:
+   > Secara default template ini menggunakan MySQL. Jika Anda menggunakan **PostgreSQL**, Anda WAJIB membuka file `prisma/schema.prisma` dan mengubah `provider = "mysql"` menjadi `provider = "postgresql"`.
+3. **Generate & Sync Prisma**:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+4. **Jalankan Aplikasi**: `npm run start:dev`
 
-## Resources
+Server menyala di `http://localhost:3000`. Langsung buka browser dan tes API Anda di **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**.
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 💡 Aturan Main (Golden Rules) Internship
+1. **Controller bukan tempat mikir!** Controller hanya menerima request dan memanggil `Service`. Semua *Business Logic* hidup di dalam `Service`.
+2. **Gunakan DTO!** Jangan menangkap *request body* dengan `@Body() body: any`. Itu dosa besar di TypeScript.
+3. **Jangan membuat response/error manual!** Cukup *return* data bersih atau lemparkan *error* (`throw new BadRequestException('Pesan')`).

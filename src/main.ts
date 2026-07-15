@@ -2,8 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
+import { PrismaClientExceptionFilter } from './core/filters/prisma-client-exception.filter';
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,7 +23,10 @@ async function bootstrap() {
   );
 
   // 3. Global Exception Filter (Untuk standardisasi Error Response)
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(
+    new HttpExceptionFilter(),
+    new PrismaClientExceptionFilter(), // Tangkap error P2002 dll
+  );
 
   // 4. Global Interceptor (Untuk standardisasi Success Response)
   app.useGlobalInterceptors(new TransformInterceptor());
@@ -38,7 +43,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   
   // Use Scalar instead of Swagger UI
-  const { apiReference } = require('@scalar/nestjs-api-reference');
   
   app.use(
     '/api-docs',
