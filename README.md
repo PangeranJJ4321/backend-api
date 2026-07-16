@@ -143,6 +143,12 @@ Proyek ini telah dibekali dengan penjaga otomatis agar kualitas kode Anda setara
    Setiap kali Anda mengetik `git commit`, robot bernama **Husky** akan mencegatnya dan menjalankan linter serta **Prettier**. Ia akan otomatis memperbaiki spasi, *indentation*, *single-quote*, dan titik koma (*semicolon*) di seluruh file `.ts` Anda. Jika ada *error* Typescript parah, *commit* akan digagalkan! Tulis kode serapi mungkin.
 2. **Scalar API Reference**
    Kami menggunakan ekosistem `@scalar/nestjs-api-reference`. Semua endpoint yang Anda buat akan otomatis terdokumentasi dengan UI yang interaktif dan mewah bak Postman di dalam browser.
+3. **Git Commit Convention (Aturan Wajib)**
+   Anda DILARANG keras menulis pesan commit sembarangan (contoh: "update", "fix bug", "bismillah"). Gunakan format **Conventional Commits**:
+   - `feat: [pesan]` ➡️ Untuk menambah fitur baru (contoh: `feat: buat endpoint get product`).
+   - `fix: [pesan]` ➡️ Untuk memperbaiki *bug* (contoh: `fix: perbaiki error prisma saat checkout`).
+   - `chore: [pesan]` ➡️ Untuk perubahan konfigurasi/alat (contoh: `chore: tambah linter`).
+   - `refactor: [pesan]` ➡️ Untuk merapikan kode tanpa mengubah fitur.
 
 ---
 
