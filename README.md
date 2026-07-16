@@ -10,6 +10,21 @@ Tujuan utama dari *boilerplate* ini adalah memberikan contoh struktur kode kelas
 
 ---
 
+## 🏗️ Cara Menggunakan Template Ini (Untuk Project Baru)
+
+Jika Anda ditugaskan untuk membuat proyek backend baru berdasarkan kerangka ini, **JANGAN melakukan *clone* biasa**. Gunakan fitur Template GitHub agar riwayat *commit* lama tidak ikut terbawa:
+
+1. Di halaman utama repositori GitHub ini, klik tombol hijau bertuliskan **"Use this template"** (di pojok kanan atas).
+2. Pilih **"Create a new repository"**.
+3. Beri nama repositori baru Anda (contoh: `backend-kasir-api`), lalu klik **Create repository**.
+4. Setelah repositori baru Anda terbuat, silakan di-*clone* ke komputer lokal Anda:
+   ```bash
+   git clone https://github.com/diskominfo-intern/backend-kasir-api.git
+   ```
+5. Ubah judul di baris pertama `README.md` ini dengan nama proyek baru Anda, lalu jalankan `npm install`.
+
+---
+
 ## 📂 Panduan Navigasi Direktori (PENTING!)
 
 Seluruh kode Anda akan hidup di dalam folder `src/`. Kami membagi kode menjadi dua bagian utama: **`core/`** dan **`modules/`**.
